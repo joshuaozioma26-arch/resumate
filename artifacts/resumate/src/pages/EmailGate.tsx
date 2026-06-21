@@ -29,8 +29,8 @@ export default function EmailGate() {
   const [error, setError] = useState('');
 
   const { data, isLoading } = useLookupResume(
-    { params: { email: inputEmail } },
-    { query: { enabled: submitted && !!inputEmail } }
+    { email: inputEmail },
+    { query: { queryKey: ["lookupResume", inputEmail], enabled: submitted && !!inputEmail } }
   );
 
   const handleSubmit = (e: React.FormEvent) => {
