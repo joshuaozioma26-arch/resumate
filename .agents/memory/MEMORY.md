@@ -1,0 +1,1 @@
+- [Email-keyed resume upsert](resumate-upsert.md) — resume builder uses email as the unique DB key with INSERT...ON CONFLICT; no auth needed for MVP.

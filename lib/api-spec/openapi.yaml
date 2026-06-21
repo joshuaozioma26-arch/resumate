@@ -1,15 +1,16 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: ResuMate API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: resume
+    description: Resume operations
 paths:
   /healthz:
     get:
@@ -24,6 +25,49 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /resume/lookup:
+    get:
+      operationId: lookupResume
+      tags: [resume]
+      summary: Look up resume by email
+      description: Returns existing resume data for an email address, or null if none exists
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Resume data or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResumeResponse"
+        "404":
+          description: Not found
+
+  /resume:
+    post:
+      operationId: saveResume
+      tags: [resume]
+      summary: Save or update resume
+      description: Upserts a resume record for the given email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResumeInput"
+      responses:
+        "200":
+          description: Saved resume
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +78,107 @@ components:
       required:
         - status
 
+    WorkExperience:
+      type: object
+      properties:
+        id:
+          type: string
+        company:
+          type: string
+        role:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: ["string", "null"]
+        description:
+          type: string
+        current:
+          type: boolean
+      required: [id, company, role, startDate, description, current]
+
+    Education:
+      type: object
+      properties:
+        id:
+          type: string
+        institution:
+          type: string
+        degree:
+          type: string
+        field:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: ["string", "null"]
+        current:
+          type: boolean
+      required: [id, institution, degree, field, startDate, current]
+
+    ResumeData:
+      type: object
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        location:
+          type: string
+        website:
+          type: ["string", "null"]
+        linkedin:
+          type: ["string", "null"]
+        summary:
+          type: string
+        workExperience:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkExperience"
+        education:
+          type: array
+          items:
+            $ref: "#/components/schemas/Education"
+        skills:
+          type: array
+          items:
+            type: string
+        template:
+          type: string
+          enum: [classic, modern]
+        isPremium:
+          type: boolean
+      required: [fullName, email, phone, location, summary, workExperience, education, skills, template, isPremium]
+
+    Resume:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        data:
+          $ref: "#/components/schemas/ResumeData"
+        updatedAt:
+          type: string
+      required: [id, email, data, updatedAt]
+
+    ResumeResponse:
+      type: object
+      properties:
+        resume:
+          oneOf:
+            - $ref: "#/components/schemas/Resume"
+            - type: "null"
+      required: [resume]
+
+    ResumeInput:
+      type: object
+      properties:
+        email:
+          type: string
+        data:
+          $ref: "#/components/schemas/ResumeData"
+      required: [email, data]
